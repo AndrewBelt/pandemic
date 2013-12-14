@@ -24,10 +24,16 @@ void world_step()
 	{
 		if (field_callbacks[i])
 		{
-			// Create a new field
+			// Create a new field to replace the old one
 			float *new_field = field_create();
 			
-			(*field_callbacks[i])(new_field);
+			for (int y = 0; y < WORLD_H; y++)
+			{
+				for (int x = 0; x < WORLD_W; x++)
+				{
+					(*field_callbacks[i])(new_field, x, y);
+				}
+			}
 			
 			field_destroy(fields[i]);
 			fields[i] = new_field;

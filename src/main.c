@@ -1,21 +1,8 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include <time.h>
 #include <SDL.h>
 #include "pandemic.h"
 
-
-void check(bool success, const char *err_message)
-{
-	if (!success)
-	{
-		if (err_message)
-			fprintf(stderr, "%s\n", err_message);
-		
-		abort();
-	}
-}
 
 void draw_world(SDL_Texture *texture)
 {
@@ -95,7 +82,7 @@ int main(int argc, const char **argv)
 	
 	// Game loop
 	bool running = true;
-	while (running)
+	for (int frame = 0; running; frame++)
 	{
 		// Handle events
 		SDL_Event event;

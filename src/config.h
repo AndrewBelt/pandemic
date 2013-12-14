@@ -3,9 +3,9 @@
 
 
 // The world grid dimensions
-// Dimensions must be a power of two.
-#define WORLD_W 128
-#define WORLD_H 128
+// Dimensions must be a power of two for now.
+#define WORLD_W 1024
+#define WORLD_H 512
 
 // The spacing between successive timesteps or cells
 #define DELTA_TIME 0.1f
@@ -15,6 +15,7 @@
 // The field layer definitions
 enum field_type_e
 {
+	ELEVATION,
 	PREY_POPULATION,
 	PREDATOR_POPULATION,
 	

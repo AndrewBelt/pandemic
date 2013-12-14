@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include "pandemic.h"
 
+
 void check(bool success, const char *err_message)
 {
 	if (!success)
@@ -16,8 +17,7 @@ void check(bool success, const char *err_message)
 	}
 }
 
-
-void draw_world(world_t *world, SDL_Texture *texture)
+void draw_world(SDL_Texture *texture)
 {
 	Uint32 *pixels;
 	int pitch;
@@ -27,38 +27,47 @@ void draw_world(world_t *world, SDL_Texture *texture)
 	check(pitch == WORLD_W * sizeof(Uint32),
 		"Pitch of texture is wrong size");
 	
-	field_t *prey_field = &world->fields[PREY_POPULATION];
-	field_t *predator_field = &world->fields[PREDATOR_POPULATION];
-	
 	for (int y = 0; y < WORLD_H; y++)
 	{
 		for (int x = 0; x < WORLD_W; x++)
 		{
-			Uint8 r = (Uint8) (field_get(prey_field, x, y) * 255);
-			Uint8 g = (Uint8) (field_get(predator_field, x, y) * 255);
-			pixels[x + WORLD_W * y] = ((Uint32) r) << 24 | ((Uint32) g) << 16;
+			union
+			{
+				Uint8 rgba[4];
+				Uint32 val;
+			} color;
+			
+			color.rgba[3] = field_get(fields[PREY_POPULATION], x, y) * 255;
+			color.rgba[2] = clip(map(field_get(fields[ELEVATION], x, y),
+				-500, 10000, 0, 255), 0, 255);
+			color.rgba[1] = field_get(fields[PREDATOR_POPULATION], x, y) * 255;
+			color.rgba[0] = 0;
+			
+			pixels[x + WORLD_W * y] = color.val;
 		}
 	}
 	
 	SDL_UnlockTexture(texture);
 }
 
-
 int main(int argc, const char **argv)
 {
-	init_pandemic();
 	srand(time(NULL));
+	pandemic_init();
 	
 	// Set up world
-	world_t world;
-	world_init(&world);
+	world_init();
 	
-	// Initial condition
-	for (int i = 0; i < 5; i++)
+	// Initial conditions
+	// (define fields for t=0)
+	
+	field_load(fields[ELEVATION], "fields/elevation.bin");
+	
+	for (int i = 0; i < 20; i++)
 	{
-		field_set(&world.fields[PREY_POPULATION],
+		field_set(fields[PREY_POPULATION],
 			rand() % WORLD_W, rand() % WORLD_H, 1.0f);
-		field_set(&world.fields[PREDATOR_POPULATION],
+		field_set(fields[PREDATOR_POPULATION],
 			rand() % WORLD_W, rand() % WORLD_H, 1.0f);
 	}
 	
@@ -67,8 +76,8 @@ int main(int argc, const char **argv)
 	
 	// Create window
 	const char *title = "pandemic";
-	int width = 600;
-	int height = 600;
+	int width = WORLD_W;
+	int height = WORLD_H;
 	SDL_Window *window = SDL_CreateWindow(title,
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		width, height, SDL_WINDOW_RESIZABLE);
@@ -97,18 +106,18 @@ int main(int argc, const char **argv)
 		}
 		
 		// Step the world
-		world_step(&world);
+		world_step();
 		
 		// Render display
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
-		draw_world(&world, texture);
+		draw_world(texture);
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 	}
 	
 	// Shutdown
 	SDL_Quit();
-	world_destroy(&world);
+	world_destroy();
 	return 0;
 }

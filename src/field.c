@@ -1,42 +1,66 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "pandemic.h"
 
 
-void field_init(field_t *field)
+float *field_create()
 {
-	field->values = calloc(WORLD_W * WORLD_H, sizeof(float));
+	return calloc(WORLD_W * WORLD_H, sizeof(float));
 }
 
-void field_destroy(field_t *field)
+void field_load(float *field, const char *filename)
 {
-	free(field->values);
+	uint32_t size[2];
+	FILE *file = fopen(filename, "r");
+	fread(size, sizeof(uint32_t), 2, file);
+	
+	if (size[0] != WORLD_W || size[1] != WORLD_H)
+	{
+		fprintf(stderr, "field file of size [%u, %u], expected [%u, %u]\n",
+			size[0], size[1], WORLD_W, WORLD_H);
+		abort();
+	}
+	
+	fread(field, sizeof(float), WORLD_W * WORLD_H, file);
 }
 
-float field_get(const field_t *field, int x, int y)
+void field_save(float *field, const char *filename)
 {
-	// Compute x % WORLD_W quickly
-	x &= WORLD_W_MASK;
-	y &= WORLD_H_MASK;
-	return field->values[x + WORLD_W * y];
+	FILE *file = fopen(filename, "w");
+	uint32_t size[2] = {WORLD_W, WORLD_H};
+	fwrite(size, sizeof(uint32_t), 2, file);
+	fwrite(field, sizeof(float), WORLD_W * WORLD_H, file);
 }
 
-void field_set(field_t *field, int x, int y, float value)
+void field_destroy(float *field)
 {
-	x &= WORLD_W_MASK;
-	y &= WORLD_H_MASK;
-	field->values[x + WORLD_W * y] = value;
+	free(field);
 }
 
-float field_laplacian(const field_t *field, int x, int y)
+float field_get_safe(const float *field, int x, int y)
 {
-	return (field_get(field, x - 1, y) - 2 * field_get(field, x, y) +
-			field_get(field, x + 1, y)) / (DELTA_X * DELTA_X) +
-		(field_get(field, x, y - 1) - 2 * field_get(field, x, y) +
-			field_get(field, x, y + 1)) / (DELTA_Y * DELTA_Y);
+	x &= WORLD_W - 1;
+	y &= WORLD_H - 1;
+	return field_get(field, x, y);
 }
 
-void field_debug_print(const field_t *field)
+void field_set_safe(float *field, int x, int y, float value)
+{
+	x &= WORLD_W - 1;
+	y &= WORLD_H - 1;
+	field_set(field, x, y, value);
+}
+
+float field_laplacian(const float *field, int x, int y)
+{
+	return (field_get_safe(field, x - 1, y) - 2 * field_get(field, x, y) +
+			field_get_safe(field, x + 1, y)) / (DELTA_X * DELTA_X) +
+		(field_get_safe(field, x, y - 1) - 2 * field_get(field, x, y) +
+			field_get_safe(field, x, y + 1)) / (DELTA_Y * DELTA_Y);
+}
+
+void field_print(const float *field)
 {
 	for (int y = 0; y < WORLD_H; y++)
 	{
@@ -48,12 +72,12 @@ void field_debug_print(const field_t *field)
 	}
 }
 
-float field_sum(const field_t *field)
+float field_sum(const float *field)
 {
 	float sum = 0.0f;
 	for (int i = 0; i < WORLD_W * WORLD_H; i++)
 	{
-		sum += field->values[i];
+		sum += field[i];
 	}
 	return sum;
 }

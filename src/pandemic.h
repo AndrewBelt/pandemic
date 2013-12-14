@@ -4,41 +4,47 @@
 #include "config.h"
 
 
-void init_pandemic();
+void pandemic_init();
+
+
+// maths
+float map(float in, float in_low, float in_high,
+	float out_low, float out_high);
+float clip(float in, float low, float high);
 
 
 // field
 
-#define WORLD_W_MASK (WORLD_W - 1)
-#define WORLD_H_MASK (WORLD_H - 1)
+float *field_create();
+void field_load(float *field, const char *filename);
+void field_save(float *field, const char *filename);
+void field_destroy(float *field);
 
-typedef struct
+float inline field_get(const float *field, int x, int y)
 {
-	float *values;
-} field_t;
+	return field[x + WORLD_W * y];
+}
 
-void field_init(field_t *field);
-void field_destroy(field_t *field);
-float field_get(const field_t *field, int x, int y);
-void field_set(field_t *field, int x, int y, float value);
-void field_incr(field_t *field, int x, int y, float value);
-float field_laplacian(const field_t *field, int x, int y);
-void field_debug_print(const field_t *field);
-float field_sum(const field_t *field);
+void inline field_set(float *field, int x, int y, float value)
+{
+	field[x + WORLD_W * y] = value;
+}
+
+float field_get_safe(const float *field, int x, int y);
+void field_set_safe(float *field, int x, int y, float value);
+float field_laplacian(const float *field, int x, int y);
+void field_print(const float *field);
+float field_sum(const float *field);
 
 
 // world
 
-typedef struct
-{
-	field_t fields[FIELD_TYPE_LENGTH];
-} world_t;
-
-typedef void (*field_callback)(world_t *world, field_t *new_field);
+float *fields[FIELD_TYPE_LENGTH];
+typedef void (*field_callback)(float *new_field);
 field_callback field_callbacks[FIELD_TYPE_LENGTH];
 
-void world_init(world_t *world);
-void world_destroy(world_t *world);
-void world_step(world_t *world);
+void world_init();
+void world_destroy();
+void world_step();
 
 #endif

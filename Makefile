@@ -6,6 +6,7 @@ LDFLAGS = \
 
 OBJS = \
 	src/main.c.o \
+	src/maths.c.o \
 	src/world.c.o \
 	src/field.c.o \
 	src/pandemic.c.o

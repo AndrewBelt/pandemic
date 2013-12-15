@@ -30,7 +30,7 @@ bool land_boundary(int x, int y)
 	return field_get_safe(fields[ELEVATION], x, y) > -490.0f;
 }
 
-void prey_callback(float *new_field, int x, int y)
+float prey_callback(int x, int y)
 {
 	static const float difn_alpha = 2.0f;
 	static const float growth_rate = 2.0f;
@@ -45,10 +45,10 @@ void prey_callback(float *new_field, int x, int y)
 		growth_rate * u * (1.0f - u / carrying_capacity) -
 		predator_beta * u * v;
 	
-	field_set(new_field, x, y, u + DELTA_TIME * D_u);
+	return u + DELTA_TIME * D_u;
 }
 
-void predator_callback(float *new_field, int x, int y)
+float predator_callback(int x, int y)
 {
 	static const float difn_alpha = 1.0f;
 	static const float growth_rate = -0.1f;
@@ -62,7 +62,7 @@ void predator_callback(float *new_field, int x, int y)
 		growth_rate * u * (1.0f - u / carrying_capacity) +
 		prey_beta * u * v;
 	
-	field_set(new_field, x, y, u + DELTA_TIME * D_u);
+	return u + DELTA_TIME * D_u;
 }
 
 void pandemic_init()

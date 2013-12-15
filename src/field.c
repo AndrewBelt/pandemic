@@ -66,6 +66,10 @@ float field_laplacian(const float *field, int x, int y)
 float field_laplacian_boundary(const float *field, int x, int y,
 	boundary_callback bc)
 {
+	// Is the following correct?
+	if (!(*bc)(x, y))
+		return 0.0f;
+	
 	bool has_west = (*bc)(x - 1, y);
 	bool has_east = (*bc)(x + 1, y);
 	bool has_north = (*bc)(x, y - 1);

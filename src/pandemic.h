@@ -63,7 +63,9 @@ float field_sum(const float *field);
 // world
 
 float *fields[FIELD_TYPE_LENGTH];
-typedef void (*field_callback)(float *new_field, int x, int y);
+// float *populations[POPULATION_TYPE_LENGTH];
+
+typedef float (*field_callback)(int x, int y);
 field_callback field_callbacks[FIELD_TYPE_LENGTH];
 
 void world_init();

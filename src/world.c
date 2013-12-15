@@ -31,7 +31,8 @@ void world_step()
 			{
 				for (int x = 0; x < WORLD_W; x++)
 				{
-					(*field_callbacks[i])(new_field, x, y);
+					float u = (*field_callbacks[i])(x, y);
+					field_set(new_field, x, y, u);
 				}
 			}
 			

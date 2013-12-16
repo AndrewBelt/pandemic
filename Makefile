@@ -1,15 +1,15 @@
-CFLAGS = -g -Wall --std=c99 -O3 \
-	$(shell pkg-config --cflags sdl2)
+CFLAGS = -g -Wall --std=c99 -O3
 
 LDFLAGS = \
-	$(shell pkg-config --libs sdl2)
+	-lpng
 
 OBJS = \
 	src/main.c.o \
 	src/maths.c.o \
 	src/world.c.o \
 	src/field.c.o \
-	src/pandemic.c.o
+	src/pandemic.c.o \
+	src/model.c.o
 
 all: pandemic
 
@@ -18,6 +18,9 @@ pandemic: $(OBJS)
 
 %.c.o: %.c
 	$(COMPILE.c) -o $@ $^
+
+run:
+	./pandemic
 
 clean:
 	rm -f pandemic $(OBJS)

@@ -40,7 +40,7 @@ void draw_world(SDL_Texture *texture)
 int main(int argc, const char **argv)
 {
 	srand(time(NULL));
-	pandemic_init();
+	init_model();
 	
 	// Set up world
 	world_init();

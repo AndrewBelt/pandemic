@@ -5,20 +5,20 @@
 #include "config.h"
 
 
-void pandemic_init();
+// pandemic.c
 
 /** Aborts with an error message if success is false
 */
 void check(bool success, const char *err_format, ...);
 
-// maths
+// maths.c
 
 float map(float in, float in_low, float in_high,
 	float out_low, float out_high);
 float clip(float in, float low, float high);
 
 
-// field
+// field.c
 
 float *field_create();
 void field_load(float *field, const char *filename);
@@ -60,7 +60,7 @@ void field_print(const float *field);
 float field_sum(const float *field);
 
 
-// world
+// world.c
 
 float *fields[FIELD_TYPE_LENGTH];
 // float *populations[POPULATION_TYPE_LENGTH];
@@ -72,5 +72,10 @@ void world_init();
 void world_destroy();
 void world_add_field();
 void world_step();
+
+// model.c
+
+void init_model();
+
 
 #endif

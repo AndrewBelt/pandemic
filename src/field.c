@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
+#include <png.h>
 #include "pandemic.h"
 
 
@@ -142,4 +143,72 @@ float field_sum(const float *field)
 		sum += field[i];
 	}
 	return sum;
+}
+
+void field_save_png(const float *field, const char *filename,
+	float low, float high)
+{
+	typedef struct
+	{
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+		uint8_t a;
+	} pixel_t;
+	
+	// Open file for writing
+	FILE *file = fopen(filename, "wb");
+	check(file, "Could not open '%s' for output", filename);
+	
+	// Set up PNG
+	png_struct *png = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+		NULL, NULL, NULL);
+	check(png, "Could not create png_struct");
+	
+	png_info *png_info = png_create_info_struct(png);
+	
+	if (!png_info)
+	{
+		png_destroy_write_struct(&png, NULL);
+		check(false, "Could not create png_info");
+	}
+	
+	if (setjmp(png_jmpbuf(png)))
+	{
+		png_destroy_write_struct(&png, &png_info);
+		check(false, "libpng exception");
+	}
+	
+	png_init_io(png, file);
+	png_set_IHDR(png, png_info, WORLD_W, WORLD_H, 8, PNG_COLOR_TYPE_RGB_ALPHA,
+		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+	png_write_info(png, png_info);
+	
+	// Create pixel buffer
+	pixel_t *buffer = calloc(WORLD_W * WORLD_H, sizeof(pixel_t));
+	unsigned char *rows[WORLD_H];
+	
+	for (int y = 0; y < WORLD_H; y++)
+	{
+		for (int x = 0; x < WORLD_W; x++)
+		{
+			float value = field_get(field, x, y);
+			uint8_t mapped_value = clip(map(value, low, high, 0, 256), 0, 255);
+			
+			pixel_t *pixel = &buffer[x + y * WORLD_W];
+			pixel->r = 255;
+			pixel->a = mapped_value;
+		}
+		
+		rows[y] = (unsigned char *) &buffer[y * WORLD_W];
+	}
+	
+	// Write PNG to file
+	png_write_image(png, rows);
+	
+	// Cleanup
+	free(buffer);
+	png_write_end(png, NULL);
+	png_destroy_write_struct(&png, &png_info);
+	fclose(file);
 }

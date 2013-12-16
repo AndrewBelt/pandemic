@@ -1,6 +1,8 @@
-CFLAGS = -g -Wall --std=c99 -O3
+CFLAGS = -g -Wall --std=c99 -O3 \
+	-I/usr/local/opt/libpng/include
 
 LDFLAGS = \
+	-L/usr/local/opt/libpng/lib \
 	-lpng
 
 OBJS = \
@@ -19,7 +21,8 @@ pandemic: $(OBJS)
 %.c.o: %.c
 	$(COMPILE.c) -o $@ $^
 
-run:
+run: pandemic
+	mkdir -p output
 	./pandemic
 
 clean:

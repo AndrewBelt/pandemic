@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <time.h>
 #include "pandemic.h"
 
 
@@ -42,10 +43,24 @@ float predator_callback(int x, int y)
 	return u + DELTA_TIME * D_u;
 }
 
-void init_model()
+void model_init()
 {
 	// Set up callbacks
 	field_callbacks[ELEVATION] = NULL;
 	field_callbacks[PREY_POPULATION] = prey_callback;
 	field_callbacks[PREDATOR_POPULATION] = predator_callback;
+	
+	srand(time(NULL));
+	// Initial conditions
+	// (define fields for t=0)
+	
+	field_load(fields[ELEVATION], "fields/elevation.bin");
+	
+	for (int i = 0; i < 20; i++)
+	{
+		field_set(fields[PREY_POPULATION],
+			rand() % WORLD_W, rand() % WORLD_H, 1.0f);
+		field_set(fields[PREDATOR_POPULATION],
+			rand() % WORLD_W, rand() % WORLD_H, 1.0f);
+	}
 }

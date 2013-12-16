@@ -58,6 +58,8 @@ float field_laplacian_boundary(const float *field, int x, int y,
 */
 void field_print(const float *field);
 float field_sum(const float *field);
+void field_save_png(const float *field, const char *filename,
+	float low, float high);
 
 
 // world.c
@@ -75,7 +77,7 @@ void world_step();
 
 // model.c
 
-void init_model();
+void model_init();
 
 
 #endif
